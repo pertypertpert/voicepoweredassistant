@@ -6,17 +6,14 @@ import win32com.client as wincom
 from datetime import datetime
 from tkhtmlview import HTMLLabel
 import requests
+from io import BytesIO
 from bs4 import BeautifulSoup
 import keyboard
 import sys
-import imgkit
-from io import BytesIO
+import json
+import htmldisplayer
 speaking=False
 mbd=False
-config = imgkit.config(wkhtmltoimage=r'wkhtmltopdf\\bin\\wkhtmltoimage.exe')
-html = "<a href='https://stackoverflow.com/questions/65680711/is-there-any-way-of-embedding-html-into-pygamee/65681085#65681085>"
-img = imgkit.from_string(html, False, config=config)
-surface = pygame.image.load(BytesIO(img))
 speak = wincom.Dispatch("SAPI.SpVoice")
 r=spr.Recognizer()
 val=''
@@ -38,18 +35,23 @@ while run:
     speakbutton=pygame.Rect(300,450, 50,50)
     pygame.draw.rect(win,(16,16,16), speakbutton)
     noteframemain=pygame.Rect(650,0, 250,500)
+    surface = pygame.image.load(BytesIO(htmldisplayer.displayhtml.htmldisplay(1, '<h1>hi</h1>'))).subsurface(0,0,30,30)
     pygame.draw.rect(win,(0,122,204), noteframemain)
+
     def fornow():
         speaking=True
         with spr.Microphone() as source:
             audio=r.listen(source)
             try:
                 text=r.recognize_google(audio)
+                jsonfile=json.load(open('repliesdata.json'))
                 try:
-                    with open(f'replies\\{text}.txt', 'r') as f:
-                        speak.Speak(f.read())
+                    jsonstr=(savedfile[f'{text}'])
+                    speak.Speak(jsonstr)
                 except:
                     speak.Speak("here's what i found")
+                    if text=="quiz me anything":
+                        print('for now')
             except:
                 speak.Speak('i did not understand')
             speaking=False
@@ -67,6 +69,7 @@ while run:
         pygame.font.init()
         myfont = pygame.font.SysFont('Verdana', 20)
         note1 = myfont.render(f'{fileread1}', False, (0, 0, 0))
+        print(fileread1)
         win.blit(note1,(660,70))
     with open('notes\\note2.txt', 'r')as f:
         fileread2=f.read()
